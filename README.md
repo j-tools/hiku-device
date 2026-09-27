@@ -64,7 +64,8 @@ X-Device-Token: <DEVICE_TOKEN>
  "imp_device_id": "…", "agent_url": "https://agent.electricimp.com/…"}
 ```
 
-and expects `200` with:
+`event` is `scan`, `cycle` (next mode) or `ready` (the scanner just woke up and is online;
+no `code`). The agent expects `200` with:
 
 ```json
 {"ok": true, "sound": "bring", "steps": ["MS", "HL"]}
@@ -73,7 +74,8 @@ and expects `200` with:
 `steps` is the sound. Each step is two characters: a pitch — `H` high, `M` medium, `L` low,
 `V` very low, or `-` for a pause — and a length, `S` short (80 ms) or `L` long (200 ms).
 Anything else, or no answer at all, plays the built-in failure sound. `sound` is only
-written to the log.
+written to the log. Answers that arrive while a sound is still playing wait their turn, so
+a wake-up sound and a scan sound never cut each other off.
 
 **Play a sound now** — the agent itself accepts:
 

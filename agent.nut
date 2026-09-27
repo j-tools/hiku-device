@@ -92,13 +92,29 @@ function renderSteps(steps) {
 // Rendering takes a moment, and the same few sounds come back all the time.
 renderedSounds <- {};
 
+// Seconds since the epoch, with fractions -- when the sound playing now will have ended.
+function now() {
+  local moment = date();
+  return moment.time + moment.usec / 1000000.0;
+}
+soundEndsAt <- 0.0;
+
+// Plays after whatever is still playing, never over it: waking up ("ready") and a scan can
+// answer within a second of each other, and the device cuts a sound off when the next one
+// arrives -- which would swallow "back to your default mode" before it was heard.
 function playSteps(steps) {
   local key = "";
   foreach (step in steps) key += step;
   if (!(key in renderedSounds)) {
     renderedSounds[key] <- renderSteps(steps);
   }
-  device.send("playAudio", {rate = SAMPLE_RATE, samples = renderedSounds[key]});
+  local samples = renderedSounds[key];
+  local delay = soundEndsAt - now();
+  if (delay < 0) delay = 0;
+  soundEndsAt = now() + delay + samples.len().tofloat() / SAMPLE_RATE;
+  imp.wakeup(delay, function() {
+    device.send("playAudio", {rate = SAMPLE_RATE, samples = samples});
+  });
 }
 
 // ---- talking to the app ----------------------------------------------------
@@ -138,6 +154,13 @@ device.on("uploadBeep", function(data) {
   sendToApp({event = "scan", code = data.scandata});
 });
 
+// The device has woken up and is online. The app answers with "ready", or with the default
+// mode's sound when the scanner has just gone back to it.
+device.on("deviceReady", function(data) {
+  server.log("EVENT " + timestamp() + " deviceReady");
+  sendToApp({event = "ready"});
+});
+
 // ---- everything else the device sends --------------------------------------
 
 // Only logged for now, so a test with the button shows which events a short, a double and
@@ -160,7 +183,7 @@ function registerLogger(name) {
   device.on(name, function(data) { logEvent(name, data); });
 }
 
-foreach (eventName in ["startAudioUpload", "endAudioUpload", "abortAudioUpload", "deviceReady",
+foreach (eventName in ["startAudioUpload", "endAudioUpload", "abortAudioUpload",
                        "buttonTimeout", "batteryStatus", "chargeStatus", "scan_start", "scan_line",
                        "set_version", "set_id", "pull", "batteryLevel", "button", "chargerState",
                        "deviceLog", "init_status", "shutdownRequestReason", "usbState"]) {
