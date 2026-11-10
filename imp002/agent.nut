@@ -85,6 +85,13 @@ device.on("buttonTimeout", function(data) {
   server.log("EVENT " + timestamp() + " buttonTimeout");
 });
 
+// Holding the button also makes the device record and upload audio, hiku's voice feature,
+// which nothing here uses. A handler that does nothing keeps the log free of "no handler"
+// errors.
+foreach (eventName in ["startAudioUpload", "uploadAudioChunk", "endAudioUpload", "abortAudioUpload"]) {
+  device.on(eventName, function(data) {});
+}
+
 // ---- playing a sound on request ----------------------------------------------
 
 // POST /play {"steps": [...]} plays a sound now -- the app's "play on the scanner" button.
