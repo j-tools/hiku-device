@@ -1,6 +1,6 @@
 # hiku-device
 
-Firmware and agent code that bring a **hiku** kitchen barcode scanner (model hiku004) back to
+Firmware and agent code that bring a **hiku** kitchen barcode scanner (hiku004, or the older model with an imp002) back to
 life after hiku Labs shut down. Scan a product and it lands on your shopping list — by
 default through [Hiku Scanner](https://hiku.j-tools.net), part of the J-Tools suite, which
 adds it to your Bring! list or your Stock pantry and tells the scanner which sound to play.
@@ -12,9 +12,11 @@ adds it to your Bring! list or your Stock pantry and tells the scanner which sou
   barcode to the app at `APP_URL`, and turns the app's answer into the sound the scanner
   plays.
 
+- **`imp002/device.nut`** and **`imp002/agent.nut`** are the same pair for the older hiku (imp002, hiku's "beta3" hardware). The device code is hiku's final beta3 firmware (1.3.17), also MIT-licensed, with a `playSteps` handler added so the scanner's piezo plays the app's sounds, and its own confirmation beep removed. This model has no audio output, only a piezo, so the agent sends steps and the device plays them as notes. **Status: new and not yet confirmed on a scanner** -- if you try it, an issue with the log is welcome.
+
 ## What you need
 
-- A **hiku004** (it runs on an Electric Imp **imp003**; impCentral shows the type).
+- A **hiku004** (it runs on an Electric Imp **imp003**) or an older hiku with an Electric Imp **imp002**. impCentral shows which type you have. The two models need different code: the root folder is for the imp003, `imp002/` for the imp002.
 - The scanner must be **unlocked**. Every hiku left the factory tied to hiku's own
   Electric Imp account; hiku unlocked them on request, but the company no longer exists, so
   this is only possible for a scanner that was unlocked already.
